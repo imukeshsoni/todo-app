@@ -1,5 +1,6 @@
 export class Todo{
-    sno:number
+
+    id?:number
     title:string
     desc: string
     active:boolean

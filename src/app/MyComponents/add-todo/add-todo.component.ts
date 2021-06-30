@@ -18,8 +18,7 @@ export class AddTodoComponent implements OnInit {
   ngOnInit(): void {
   }
   onSubmit(){
-    const todo = {
-      sno: 8,
+    const todo:Todo = {
       title:this.title,
       desc:this.desc,
       active:true
