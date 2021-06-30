@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Todo } from 'src/app/model/Todo';
+import { NgxIndexedDBService} from "ngx-indexed-db"
 
 @Component({
   selector: 'app-todos',
@@ -7,32 +8,38 @@ import { Todo } from 'src/app/model/Todo';
   styleUrls: ['./todos.component.css'],
 })
 export class TodosComponent implements OnInit {
-  todos: Todo[];
-  storedTodos = localStorage.getItem("todos")
-  constructor() {
-    if(!this.storedTodos){
-      this.todos = [];
-    }else{
-      this.todos = JSON.parse(this.storedTodos)
-    }
+  todos: Todo[] = [];
+  constructor(private dbService: NgxIndexedDBService) {
+    dbService.getAll('todos').subscribe( async (todoList:Todo[]) => {
+      this.todos = todoList
+      console.log("All Todos", todoList)
+    })    
   }
 
   ngOnInit(): void {}
 
   deleteTodo(todo:Todo){
     const index = this.todos.indexOf(todo);
-    this.todos.splice(index, 1);
-    localStorage.setItem("todos", JSON.stringify(this.todos))
+    this.dbService.deleteByKey('todos', todo.id).subscribe((status) => {
+      this.todos.splice(index, 1);
+    });
   }
   addTodo(todo:Todo){
-    console.log(todo);
-    this.todos.push(todo);
-    localStorage.setItem("todos", JSON.stringify(this.todos))
+    this.dbService
+      .addItem('todos', {
+        title: todo.title,
+        desc: todo.desc,
+        active: true,
+      })
+      .subscribe((item) => {
+        this.todos.push(todo);
+      });
   }
   toggleTodo(todo:Todo){
-    const index = this.todos.indexOf(todo);
-    this.todos[index].active = !this.todos[index].active;
-    localStorage.setItem("todos", JSON.stringify(this.todos))
+    todo.active = !todo.active;
+    this.dbService.update('todos', todo).subscribe(todoList => {
+      this.todos = todoList
+    })
   }
 
 }
